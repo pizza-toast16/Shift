@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>SHIFT — Caesar Cipher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #111111;
+      --muted: #777777;
+      --line: #e7e7e7;
+      --soft: #f6f6f6;
+      --white: #ffffff;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-width: 320px; background: var(--white); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--white);
+      font-family: "Zen Maru Gothic", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .page {
+      width: min(100% - 48px, 900px);
+      margin: 0 auto;
+      padding: 34px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .19em;
+    }
+
+    .top-note {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .hero { padding: 58px 0 34px; }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 7vw, 62px);
+      font-weight: 500;
+      letter-spacing: -.055em;
+      line-height: 1.12;
+    }
+
+    h1 span { font-weight: 700; }
+
+    .intro {
+      max-width: 560px;
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.95;
+    }
+
+    .panel {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+    }
+
+    .field-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    label, .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field-hint {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 170px;
+      resize: vertical;
+      padding: 17px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.9;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    textarea::placeholder { color: #b4b4b4; }
+    textarea:focus, input:focus-visible {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, .055);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .shift-wrap { max-width: 240px; }
+
+    .shift-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .shift-caption {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .kana-mode-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 13px;
+      color: #555;
+      font-size: 11px;
+      line-height: 1.6;
+      cursor: pointer;
+    }
+
+    .kana-mode-row input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: var(--ink);
+      flex: 0 0 auto;
+    }
+
+    .actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    button {
+      min-height: 48px;
+      padding: 0 21px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: 3px solid #bdbdbd; outline-offset: 3px; }
+
+    .primary { color: #fff; background: var(--ink); }
+    .primary:hover { color: var(--ink); background: #fff; }
+    .secondary { color: var(--ink); background: #fff; }
+    .secondary:hover { background: var(--soft); }
+
+    .error {
+      min-height: 20px;
+      margin: 12px 2px 0;
+      color: #b42318;
+      font-size: 12px;
+    }
+
+    .result-section { margin-top: 20px; }
+
+    .result-panel {
+      min-height: 150px;
+      padding: 22px 24px;
+      border-radius: var(--radius);
+      background: var(--soft);
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .result-label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .result-state {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    #result {
+      margin: 0;
+      min-height: 62px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font-size: 17px;
+      line-height: 1.9;
+    }
+
+    #result.empty { color: #a5a5a5; }
+
+    .footnote {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 16px 3px 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .footnote-mark {
+      flex: 0 0 auto;
+      display: inline-grid;
+      width: 17px;
+      height: 17px;
+      place-items: center;
+      border: 1px solid #cfcfcf;
+      border-radius: 50%;
+      font-size: 10px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 44px;
+      padding-top: 17px;
+      border-top: 1px solid var(--line);
+      color: #999;
+      font-size: 10px;
+      letter-spacing: .08em;
+    }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 32px, 520px); padding-top: 22px; }
+      .hero { padding: 43px 0 26px; }
+      .panel { padding: 19px; border-radius: 15px; }
+      textarea { min-height: 155px; padding: 14px; }
+      .controls { grid-template-columns: 1fr; gap: 18px; }
+      .shift-wrap { max-width: none; }
+      .shift-input-row { max-width: 220px; }
+      .actions { display: grid; grid-template-columns: 1fr 1fr; }
+      button { padding: 0 12px; }
+      .result-panel { padding: 19px; min-height: 140px; }
+      footer { margin-top: 32px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">SHIFT / 26</div>
+      <div class="top-note">SIMPLE CIPHER TOOL</div>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">LETTER SHIFT ENCODER</p>
+      <h1 id="page-title">文字を、<span>ずらす。</span></h1>
+      <p class="intro">
+        シフト数を決めて、アルファベットを変換。ひらがなはヘボン式ローマ字を経由して処理し、戻せる文字はひらがなに変換します。
+      </p>
+    </section>
+
+    <section class="panel" aria-label="暗号化するテキスト">
+      <div class="field-head">
+        <label for="source">TEXT INPUT</label>
+        <span class="field-hint">変換したい文章を入力</span>
+      </div>
+      <textarea id="source" placeholder="ここに文章を入力してください。&#10;例：こんにちは、世界！" spellcheck="false"></textarea>
+
+      <div class="controls">
+        <div class="shift-wrap">
+          <div class="field-head">
+            <label for="shift">SHIFT NUMBER</label>
+            <span class="field-hint">正数・負数に対応</span>
+          </div>
+          <div class="shift-input-row">
+            <input id="shift" type="number" step="1" value="3" inputmode="numeric" aria-describedby="shift-caption">
+          </div>
+          <p class="shift-caption" id="shift-caption">例：3 なら右へ3文字、-3 なら左へ3文字</p>
+          <label class="kana-mode-row" for="kana-mode">
+            <input id="kana-mode" type="checkbox">
+            ひらがなモードを固定（英字だけの暗号文を復号するとき）
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" id="run" type="button">変換する <span aria-hidden="true">→</span></button>
+          <button class="secondary" id="clear" type="button">クリア</button>
+        </div>
+      </div>
+      <p class="error" id="error" role="alert" aria-live="polite"></p>
+    </section>
+
+    <section class="result-section" aria-label="変換結果">
+      <div class="result-panel">
+        <div class="result-top">
+          <span class="result-label">RESULT</span>
+          <span class="result-state" id="result-state">結果がここに表示されます</span>
+        </div>
+        <p id="result" class="empty" aria-live="polite">変換結果はまだありません。</p>
+      </div>
+      <div class="result-top" style="justify-content:flex-end; margin: 11px 2px 0;">
+        <button class="secondary" id="copy" type="button" style="min-height:38px; padding:0 16px; font-size:11px;">結果をコピー</button>
+      </div>
+      <p class="footnote">
+        <span class="footnote-mark" aria-hidden="true">i</span>
+        <span>ひらがなを含む入力ではひらがなモードが自動で有効になります。暗号化後に英字だけになった場合は、復号時も「ひらがなモードを固定」をオンにしてください。逆変換は読める部分のみ行います。「を」は wo として扱うため「お」と区別できますが、「ぢ／じ」「づ／ず」など同じローマ字になる仮名は区別できない場合があります。記号・空白・句読点は変化しません。</span>
+      </p>
+    </section>
+
+    <footer>
+      <span>SHIFT / 26</span>
+      <span>KEEP IT SIMPLE.</span>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // 基本的なヘボン式ローマ字表（ひらがな → ローマ字）
+    const HEPBURN = {
+      "あ":"a", "い":"i", "う":"u", "え":"e", "お":"o",
+      "か":"ka", "き":"ki", "く":"ku", "け":"ke", "こ":"ko",
+      "さ":"sa", "し":"shi", "す":"su", "せ":"se", "そ":"so",
+      "た":"ta", "ち":"chi", "つ":"tsu", "て":"te", "と":"to",
+      "な":"na", "に":"ni", "ぬ":"nu", "ね":"ne", "の":"no",
+      "は":"ha", "ひ":"hi", "ふ":"fu", "へ":"he", "ほ":"ho",
+      "ま":"ma", "み":"mi", "む":"mu", "め":"me", "も":"mo",
+      "や":"ya", "ゆ":"yu", "よ":"yo",
+      "ら":"ra", "り":"ri", "る":"ru", "れ":"re", "ろ":"ro",
+      "わ":"wa", "を":"wo", "ん":"n",
+      "が":"ga", "ぎ":"gi", "ぐ":"gu", "げ":"ge", "ご":"go",
+      "ざ":"za", "じ":"ji", "ず":"zu", "ぜ":"ze", "ぞ":"zo",
+      "だ":"da", "ぢ":"ji", "づ":"zu", "で":"de", "ど":"do",
+      "ば":"ba", "び":"bi", "ぶ":"bu", "べ":"be", "ぼ":"bo",
+      "ぱ":"pa", "ぴ":"pi", "ぷ":"pu", "ぺ":"pe", "ぽ":"po",
+      "ゔ":"vu", "ゐ":"wi", "ゑ":"we",
+      "きゃ":"kya", "きゅ":"kyu", "きょ":"kyo",
+      "ぎゃ":"gya", "ぎゅ":"gyu", "ぎょ":"gyo",
+      "しゃ":"sha", "しゅ":"shu", "しょ":"sho",
+      "じゃ":"ja", "じゅ":"ju", "じょ":"jo",
+      "ちゃ":"cha", "ちゅ":"chu", "ちょ":"cho",
+      "ぢゃ":"ja", "ぢゅ":"ju", "ぢょ":"jo",
+      "にゃ":"nya", "にゅ":"nyu", "にょ":"nyo",
+      "ひゃ":"hya", "ひゅ":"hyu", "ひょ":"hyo",
+      "びゃ":"bya", "びゅ":"byu", "びょ":"byo",
+      "ぴゃ":"pya", "ぴゅ":"pyu", "ぴょ":"pyo",
+      "みゃ":"mya", "みゅ":"myu", "みょ":"myo",
+      "りゃ":"rya", "りゅ":"ryu", "りょ":"ryo",
+      "いぇ":"ye", "うぁ":"wa", "うぃ":"wi", "うぇ":"we", "うぉ":"who",
+      "しぇ":"she", "じぇ":"je", "ちぇ":"che",
+      "てぃ":"ti", "でぃ":"di", "とぅ":"tu", "どぅ":"du",
+      "ふぁ":"fa", "ふぃ":"fi", "ふぇ":"fe", "ふぉ":"fo",
+      "ゔぁ":"va", "ゔぃ":"vi", "ゔぇ":"ve", "ゔぉ":"vo",
+      "ぁ":"xa", "ぃ":"xi", "ぅ":"xu", "ぇ":"xe", "ぉ":"xo",
+      "ゃ":"xya", "ゅ":"xyu", "ょ":"xyo", "ゎ":"xwa", "っ":"xtsu"
+    };
+
+    const VOWELS_AND_Y = new Set(["a", "i", "u", "e", "o", "y"]);
+    const ROMAJI_TO_HIRA = new Map();
+    for (const [kana, romaji] of Object.entries(HEPBURN)) {
+      // 同じローマ字に複数の仮名が対応する場合は、先に登録された一般的な仮名を優先。
+      if (!ROMAJI_TO_HIRA.has(romaji)) ROMAJI_TO_HIRA.set(romaji, kana);
+    }
+    ROMAJI_TO_HIRA.set("n'", "ん");
+
+    function isHiragana(char) {
+      return /^[\u3041-\u3096\u309D-\u309F]$/u.test(char);
+    }
+
+    function isAsciiLetter(char) {
+      return /^[A-Za-z]$/.test(char);
+    }
+
+    function shiftLetters(text, amount) {
+      const shift = ((amount % 26) + 26) % 26;
+      return Array.from(text, char => {
+        const code = char.charCodeAt(0);
+        if (code >= 65 && code <= 90) return String.fromCharCode((code - 65 + shift) % 26 + 65);
+        if (code >= 97 && code <= 122) return String.fromCharCode((code - 97 + shift) % 26 + 97);
+        return char;
+      }).join("");
+    }
+
+    function romanizeAt(chars, index) {
+      const char = chars[index];
+      const nextKana = chars[index + 1] || "";
+      const pair = char + nextKana;
+      if (Object.prototype.hasOwnProperty.call(HEPBURN, pair)) {
+        return { text: HEPBURN[pair], length: 2 };
+      }
+      if (char === "ん") {
+        const nextUnit = index + 1 < chars.length ? romanizeAt(chars, index + 1) : null;
+        const nextInitial = nextUnit ? nextUnit.text[0] : "";
+        return { text: VOWELS_AND_Y.has(nextInitial) ? "n'" : "n", length: 1 };
+      }
+      if (Object.prototype.hasOwnProperty.call(HEPBURN, char)) {
+        return { text: HEPBURN[char], length: 1 };
+      }
+      return { text: char, length: 1 };
+    }
+
+    function hiraganaToHepburn(text) {
+      const chars = Array.from(text);
+      let result = "";
+      for (let i = 0; i < chars.length;) {
+        if (chars[i] === "っ" && i + 1 < chars.length) {
+          const next = romanizeAt(chars, i + 1);
+          const first = next.text[0] || "";
+          if (/^[bcdfghjklmnpqrstvwxyz]$/i.test(first)) {
+            // Hepburn: っち → tchi、っし → sshi など。
+            const doubled = next.text.startsWith("ch") ? "t" : first;
+            result += doubled + next.text;
+            i += 1 + next.length;
+            continue;
+          }
+          result += "xtsu";
+          i++;
+          continue;
+        }
+        const unit = romanizeAt(chars, i);
+        result += unit.text;
+        i += unit.length;
+      }
+      return result;
+    }
+
+    function hiraganaizeRomaji(text) {
+      const chars = Array.from(text);
+      const keys = Array.from(ROMAJI_TO_HIRA.keys()).sort((a, b) => b.length - a.length);
+      let result = "";
+
+      for (let i = 0; i < chars.length;) {
+        // 小さい「っ」の子音重ねを復元（kko → っこ、sshi → っし、tchi → っち）。
+        if (i + 1 < chars.length && chars[i] === chars[i + 1] && chars[i] !== "n" && /^[bcdfghjklmpqrstvwxyz]$/.test(chars[i])) {
+          const tail = chars.slice(i + 1).join("");
+          const doubledKey = keys.find(key => key[0] === chars[i] && tail.startsWith(key));
+          if (doubledKey) {
+            result += "っ" + ROMAJI_TO_HIRA.get(doubledKey);
+            i += 1 + doubledKey.length;
+            continue;
+          }
+        }
+        if (chars[i] === "t" && chars[i + 1] === "c" && chars[i + 2] === "h") {
+          const tail = chars.slice(i + 1).join("");
+          const chKey = keys.find(key => key.startsWith("ch") && tail.startsWith(key));
+          if (chKey) {
+            result += "っ" + ROMAJI_TO_HIRA.get(chKey);
+            i += 1 + chKey.length;
+            continue;
+          }
+        }
+
+        // 「ん」の n は、後ろが母音・y でない場合や末尾の場合に単独で読める。
+        if (chars[i] === "n") {
+          if (chars[i + 1] === "'") {
+            result += "ん";
+            i += 2;
+            continue;
+          }
+          const next = chars[i + 1] || "";
+          const afterNext = chars[i + 2] || "";
+          if (!next || (!VOWELS_AND_Y.has(next) && next !== "n")) {
+            result += "ん";
+            i++;
+            continue;
+          }
+          if (next === "n" && (!afterNext || VOWELS_AND_Y.has(afterNext))) {
+            result += "ん";
+            i++;
+            continue;
+          }
+        }
+
+        let matched = false;
+        for (const key of keys) {
+          if (key.length === 0) continue;
+          if (chars.slice(i, i + key.length).join("") === key) {
+            result += ROMAJI_TO_HIRA.get(key);
+            i += key.length;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          result += chars[i];
+          i++;
+        }
+      }
+      return result;
+    }
+
+    function transformText(text, shift, forceHiraganaMode = false) {
+      const chars = Array.from(text);
+      const hasHiragana = chars.some(isHiragana);
+      const useHiraganaMode = hasHiragana || forceHiraganaMode;
+      if (!useHiraganaMode) return shiftLetters(text, shift);
+
+      // ひらがなと英字を同じローマ字ストリームとして扱う。
+      // 暗号化結果にひらがなが残らない場合も、固定モードなら逆シフトできる。
+      let output = "";
+      let run = "";
+      const flushRun = () => {
+        if (!run) return;
+        const romanized = hiraganaToHepburn(run);
+        const shifted = shiftLetters(romanized, shift);
+        output += hiraganaizeRomaji(shifted);
+        run = "";
+      };
+
+      for (const char of chars) {
+        if (isHiragana(char) || isAsciiLetter(char)) {
+          run += char;
+        } else {
+          flushRun();
+          output += char;
+        }
+      }
+      flushRun();
+      return output;
+    }
+
+    const source = document.getElementById("source");
+    const shiftInput = document.getElementById("shift");
+    const result = document.getElementById("result");
+    const resultState = document.getElementById("result-state");
+    const error = document.getElementById("error");
+    const kanaMode = document.getElementById("kana-mode");
+
+    source.addEventListener("input", () => {
+      // ひらがなが入力されたら自動でモードを有効化。復号時にオフにすることもできる。
+      if (Array.from(source.value).some(isHiragana)) kanaMode.checked = true;
+    });
+
+    function runConversion() {
+      error.textContent = "";
+      const rawShift = shiftInput.value.trim();
+      const amount = Number(rawShift);
+      if (rawShift === "" || !Number.isSafeInteger(amount)) {
+        error.textContent = "シフト数には整数を入力してください。";
+        shiftInput.focus();
+        return;
+      }
+      if (source.value.length === 0) {
+        error.textContent = "先に文章を入力してください。";
+        source.focus();
+        return;
+      }
+
+      const converted = transformText(source.value, amount, kanaMode.checked);
+      result.textContent = converted;
+      result.classList.remove("empty");
+      const modeLabel = Array.from(source.value).some(isHiragana) || kanaMode.checked ? " · HIRAGANA MODE" : "";
+      resultState.textContent = `SHIFT ${amount > 0 ? "+" : ""}${amount}${modeLabel}`;
+    }
+
+    document.getElementById("run").addEventListener("click", runConversion);
+
+    document.getElementById("clear").addEventListener("click", () => {
+      source.value = "";
+      kanaMode.checked = false;
+      error.textContent = "";
+      result.textContent = "変換結果はまだありません。";
+      result.classList.add("empty");
+      resultState.textContent = "結果がここに表示されます";
+      source.focus();
+    });
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      if (result.classList.contains("empty")) {
+        error.textContent = "コピーする結果がありません。先に変換してください。";
+        return;
+      }
+      const text = result.textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const temporary = document.createElement("textarea");
+          temporary.value = text;
+          temporary.style.position = "fixed";
+          temporary.style.opacity = "0";
+          document.body.appendChild(temporary);
+          temporary.select();
+          const copied = document.execCommand("copy");
+          temporary.remove();
+          if (!copied) throw new Error("copy failed");
+        }
+        error.style.color = "#555";
+        error.textContent = "結果をコピーしました。";
+        window.setTimeout(() => {
+          error.textContent = "";
+          error.style.color = "";
+        }, 1800);
+      } catch (e) {
+        error.style.color = "#b42318";
+        error.textContent = "コピーできませんでした。結果を選択してコピーしてください。";
+      }
+    });
+
+    // Ctrl + Enter / Command + Enter でも変換できます。
+    source.addEventListener("keydown", event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") runConversion();
+    });
+  </script>
+</body>
+</html>
